@@ -815,11 +815,13 @@ void SX126x::ClearIrqStatus( uint16_t irq )
 	WriteCommand( RADIO_CLR_IRQSTATUS, buf, 2 );
 }
 
-void SX126x::ProcessIrqs( void ) {
-	std::lock_guard<std::mutex> lg(IOLock2);
+void SX126x::ProcessIrqs() {
+	std::unique_lock<std::mutex> lg(IOLock2);
 
 	uint16_t irqRegs = GetIrqStatus( );
 	ClearIrqStatus( IRQ_RADIO_ALL );
+
+	lg.unlock();
 
 #ifdef ADV_DEBUG
 	printf("0x%04x\n\r", irqRegs );

@@ -1284,7 +1284,7 @@ public:
 	 * \brief Process the analysis of radio IRQs and calls callback functions
 	 *        depending on radio state
 	 */
-	void ProcessIrqs( void );
+	void ProcessIrqs();
 
 	typedef enum {
 		GPIO_PIN_RESET,
