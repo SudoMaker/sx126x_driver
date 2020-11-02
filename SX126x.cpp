@@ -204,6 +204,9 @@ void SX126x::SetTx( uint32_t timeout )
 	buf[0] = ( uint8_t )( ( timeout >> 16 ) & 0xFF );
 	buf[1] = ( uint8_t )( ( timeout >> 8 ) & 0xFF );
 	buf[2] = ( uint8_t )( timeout & 0xFF );
+
+	HalPostRx();
+	HalPreTx();
 	WriteCommand( RADIO_SET_TX, buf, 3 );
 }
 
@@ -224,6 +227,9 @@ void SX126x::SetRxBoosted( uint32_t timeout )
 	buf[0] = ( uint8_t )( ( timeout >> 16 ) & 0xFF );
 	buf[1] = ( uint8_t )( ( timeout >> 8 ) & 0xFF );
 	buf[2] = ( uint8_t )( timeout & 0xFF );
+
+	HalPostTx();
+	HalPreRx();
 	WriteCommand( RADIO_SET_RX, buf, 3 );
 }
 
@@ -242,6 +248,9 @@ void SX126x::SetRx( uint32_t timeout )
 	buf[0] = ( uint8_t )( ( timeout >> 16 ) & 0xFF );
 	buf[1] = ( uint8_t )( ( timeout >> 8 ) & 0xFF );
 	buf[2] = ( uint8_t )( timeout & 0xFF );
+
+	HalPostTx();
+	HalPreRx();
 	WriteCommand( RADIO_SET_RX, buf, 3 );
 }
 
@@ -257,6 +266,9 @@ void SX126x::SetRxDutyCycle( uint32_t rxTime, uint32_t sleepTime )
 	buf[3] = ( uint8_t )( ( sleepTime >> 16 ) & 0xFF );
 	buf[4] = ( uint8_t )( ( sleepTime >> 8 ) & 0xFF );
 	buf[5] = ( uint8_t )( sleepTime & 0xFF );
+
+	HalPostTx();
+	HalPreRx();
 	WriteCommand( RADIO_SET_RXDUTYCYCLE, buf, 6 );
 	OperatingMode = MODE_RX_DC;
 }
@@ -265,6 +277,8 @@ void SX126x::SetCad( void )
 {
 	std::lock_guard<std::mutex> lg(IOLock2);
 
+	HalPostTx();
+	HalPreRx();
 	WriteCommand( RADIO_SET_CAD, 0, 0 );
 	OperatingMode = MODE_CAD;
 }
@@ -276,6 +290,9 @@ void SX126x::SetTxContinuousWave( void )
 #ifdef ADV_DEBUG
 	printf("SetTxContinuousWave ");
 #endif
+
+	HalPostRx();
+	HalPreTx();
 	WriteCommand( RADIO_SET_TXCONTINUOUSWAVE, 0, 0 );
 }
 
@@ -286,6 +303,9 @@ void SX126x::SetTxInfinitePreamble( void )
 #ifdef ADV_DEBUG
 	printf("SetTxContinuousPreamble ");
 #endif
+
+	HalPostRx();
+	HalPreTx();
 	WriteCommand( RADIO_SET_TXCONTINUOUSPREAMBLE, 0, 0 );
 }
 
