@@ -68,21 +68,13 @@ public:
 
 	enum {
 		/*!
- * \brief Enables/disables driver debug features
- */
+		 * \brief Enables/disables driver debug features
+		 */
 		SX126x_DEBUG = 0,
 
-
-
-
-
-
-
-
-
-/*!
- * \brief List of matching supported by the sx126x
- */
+		/*!
+		 * \brief List of matching supported by the sx126x
+		 */
 		MATCHING_FREQ_915 = 0,
 		MATCHING_FREQ_780 = 1,
 		MATCHING_FREQ_490 = 2,
@@ -844,18 +836,31 @@ private:
 	 */
 	bool ImageCalibrated = false;
 
+	ModulationParams_t CurrentModParams = {};
+
+	PacketParams_t CurrentPacketParams = {};
+
 public:
 	/*!
 	 * \brief Initializes the radio driver
 	 */
-	void Init( void );
+	void Init();
 
 	/*!
-	 * \brief Gets the current Operation Mode of the Radip
+	 * \brief Gets the current Operation Mode of the Radio
 	 *
 	 * \retval      RadioOperatingModes_t last operating mode
 	 */
 	virtual RadioOperatingModes_t GetOperatingMode( void );
+
+	/*!
+	 * \brief Gets Time on Air of packet
+	 *
+	 * \retval      Time on Air in milliseconds
+	 */
+	static uint32_t GetTimeOnAir(const ModulationParams_t &modparams, const PacketParams_t &pktparams);
+
+	uint32_t GetTimeOnAir();
 
 	/*!
 	 * \brief Wakeup the radio if it is in Sleep mode and check that Busy is low
@@ -1118,14 +1123,14 @@ public:
 	 *
 	 * \param [in]  modParams     A structure describing the modulation parameters
 	 */
-	void SetModulationParams( ModulationParams_t *modParams );
+	void SetModulationParams(const ModulationParams_t& modParams);
 
 	/*!
 	 * \brief Sets the packet parameters
 	 *
 	 * \param [in]  packetParams  A structure describing the packet parameters
 	 */
-	void SetPacketParams( PacketParams_t *packetParams );
+	void SetPacketParams(const PacketParams_t& packetParams);
 
 	/*!
 	 * \brief Sets the Channel Activity Detection (CAD) parameters

@@ -532,7 +532,7 @@ void SX126x::SetTxParams(int8_t power, RadioRampTimes_t rampTime)
 	WriteCommand( RADIO_SET_TXPARAMS, buf, 2 );
 }
 
-void SX126x::SetModulationParams( ModulationParams_t *modulationParams )
+void SX126x::SetModulationParams(const ModulationParams_t& modulationParams )
 {
 	uint8_t n;
 	uint32_t tempVal = 0;
@@ -544,96 +544,44 @@ void SX126x::SetModulationParams( ModulationParams_t *modulationParams )
 
 	// Check if required configuration corresponds to the stored packet type
 	// If not, silently update radio packet type
-	if( this->PacketType != modulationParams->PacketType )
+	if( this->PacketType != modulationParams.PacketType )
 	{
-		this->SetPacketType( modulationParams->PacketType );
+		this->SetPacketType( modulationParams.PacketType );
 	}
 
-	switch( modulationParams->PacketType )
+	switch( modulationParams.PacketType )
 	{
 		case PACKET_TYPE_GFSK:
 			n = 8;
-			tempVal = ( uint32_t )( 32 * ( ( double )XTAL_FREQ / ( double )modulationParams->Params.Gfsk.BitRate ) );
+			tempVal = ( uint32_t )( 32 * ( ( double )XTAL_FREQ / ( double )modulationParams.Params.Gfsk.BitRate ) );
 			buf[0] = ( tempVal >> 16 ) & 0xFF;
 			buf[1] = ( tempVal >> 8 ) & 0xFF;
 			buf[2] = tempVal & 0xFF;
-			buf[3] = modulationParams->Params.Gfsk.ModulationShaping;
-			buf[4] = modulationParams->Params.Gfsk.Bandwidth;
-			tempVal = ( uint32_t )( ( double )modulationParams->Params.Gfsk.Fdev / ( double )FREQ_STEP );
+			buf[3] = modulationParams.Params.Gfsk.ModulationShaping;
+			buf[4] = modulationParams.Params.Gfsk.Bandwidth;
+			tempVal = ( uint32_t )( ( double )modulationParams.Params.Gfsk.Fdev / ( double )FREQ_STEP );
 			buf[5] = ( tempVal >> 16 ) & 0xFF;
 			buf[6] = ( tempVal >> 8 ) & 0xFF;
 			buf[7] = ( tempVal& 0xFF );
 			break;
 		case PACKET_TYPE_LORA:
 			n = 4;
-			switch( modulationParams->Params.LoRa.Bandwidth )
-			{
-				case LORA_BW_500:
-					modulationParams->Params.LoRa.LowDatarateOptimize = 0x00;
-					break;
-				case LORA_BW_250:
-					if( modulationParams->Params.LoRa.SpreadingFactor == 12 )
-					{
-						modulationParams->Params.LoRa.LowDatarateOptimize = 0x01;
-					}
-					else
-					{
-						modulationParams->Params.LoRa.LowDatarateOptimize = 0x00;
-					}
-					break;
-				case LORA_BW_125:
-					if( modulationParams->Params.LoRa.SpreadingFactor >= 11 )
-					{
-						modulationParams->Params.LoRa.LowDatarateOptimize = 0x01;
-					}
-					else
-					{
-						modulationParams->Params.LoRa.LowDatarateOptimize = 0x00;
-					}
-					break;
-				case LORA_BW_062:
-					if( modulationParams->Params.LoRa.SpreadingFactor >= 10 )
-					{
-						modulationParams->Params.LoRa.LowDatarateOptimize = 0x01;
-					}
-					else
-					{
-						modulationParams->Params.LoRa.LowDatarateOptimize = 0x00;
-					}
-					break;
-				case LORA_BW_041:
-					if( modulationParams->Params.LoRa.SpreadingFactor >= 9 )
-					{
-						modulationParams->Params.LoRa.LowDatarateOptimize = 0x01;
-					}
-					else
-					{
-						modulationParams->Params.LoRa.LowDatarateOptimize = 0x00;
-					}
-					break;
-				case LORA_BW_031:
-				case LORA_BW_020:
-				case LORA_BW_015:
-				case LORA_BW_010:
-				case LORA_BW_007:
-					modulationParams->Params.LoRa.LowDatarateOptimize = 0x01;
-					break;
-				default:
-					break;
-			}
-			buf[0] = modulationParams->Params.LoRa.SpreadingFactor;
-			buf[1] = modulationParams->Params.LoRa.Bandwidth;
-			buf[2] = modulationParams->Params.LoRa.CodingRate;
-			buf[3] = modulationParams->Params.LoRa.LowDatarateOptimize;
+
+			buf[0] = modulationParams.Params.LoRa.SpreadingFactor;
+			buf[1] = modulationParams.Params.LoRa.Bandwidth;
+			buf[2] = modulationParams.Params.LoRa.CodingRate;
+			buf[3] = modulationParams.Params.LoRa.LowDatarateOptimize;
 			break;
 		default:
 		case PACKET_TYPE_NONE:
 			return;
 	}
 	WriteCommand( RADIO_SET_MODULATIONPARAMS, buf, n );
+
+	CurrentModParams = modulationParams;
 }
 
-void SX126x::SetPacketParams( PacketParams_t *packetParams )
+void SX126x::SetPacketParams(const PacketParams_t& packetParams )
 {
 	uint8_t n;
 	uint8_t crcVal = 0;
@@ -645,21 +593,21 @@ void SX126x::SetPacketParams( PacketParams_t *packetParams )
 
 	// Check if required configuration corresponds to the stored packet type
 	// If not, silently update radio packet type
-	if( this->PacketType != packetParams->PacketType )
+	if( this->PacketType != packetParams.PacketType )
 	{
-		this->SetPacketType( packetParams->PacketType );
+		this->SetPacketType( packetParams.PacketType );
 	}
 
-	switch( packetParams->PacketType )
+	switch( packetParams.PacketType )
 	{
 		case PACKET_TYPE_GFSK:
-			if( packetParams->Params.Gfsk.CrcLength == RADIO_CRC_2_BYTES_IBM )
+			if( packetParams.Params.Gfsk.CrcLength == RADIO_CRC_2_BYTES_IBM )
 			{
 				SetCrcSeed( CRC_IBM_SEED );
 				SetCrcPolynomial( CRC_POLYNOMIAL_IBM );
 				crcVal = RADIO_CRC_2_BYTES;
 			}
-			else if(  packetParams->Params.Gfsk.CrcLength == RADIO_CRC_2_BYTES_CCIT )
+			else if(  packetParams.Params.Gfsk.CrcLength == RADIO_CRC_2_BYTES_CCIT )
 			{
 				SetCrcSeed( CRC_CCITT_SEED );
 				SetCrcPolynomial( CRC_POLYNOMIAL_CCITT );
@@ -667,36 +615,35 @@ void SX126x::SetPacketParams( PacketParams_t *packetParams )
 			}
 			else
 			{
-				crcVal = packetParams->Params.Gfsk.CrcLength;
+				crcVal = packetParams.Params.Gfsk.CrcLength;
 			}
 			n = 9;
-			// convert preamble length from byte to bit
-			packetParams->Params.Gfsk.PreambleLength = packetParams->Params.Gfsk.PreambleLength << 3;
-
-			buf[0] = ( packetParams->Params.Gfsk.PreambleLength >> 8 ) & 0xFF;
-			buf[1] = packetParams->Params.Gfsk.PreambleLength;
-			buf[2] = packetParams->Params.Gfsk.PreambleMinDetect;
-			buf[3] = ( packetParams->Params.Gfsk.SyncWordLength << 3 ); // convert from byte to bit
-			buf[4] = packetParams->Params.Gfsk.AddrComp;
-			buf[5] = packetParams->Params.Gfsk.HeaderType;
-			buf[6] = packetParams->Params.Gfsk.PayloadLength;
+			buf[0] = ( packetParams.Params.Gfsk.PreambleLength >> 8 ) & 0xFF;
+			buf[1] = packetParams.Params.Gfsk.PreambleLength;
+			buf[2] = packetParams.Params.Gfsk.PreambleMinDetect;
+			buf[3] = ( packetParams.Params.Gfsk.SyncWordLength << 3 ); // convert from byte to bit
+			buf[4] = packetParams.Params.Gfsk.AddrComp;
+			buf[5] = packetParams.Params.Gfsk.HeaderType;
+			buf[6] = packetParams.Params.Gfsk.PayloadLength;
 			buf[7] = crcVal;
-			buf[8] = packetParams->Params.Gfsk.DcFree;
+			buf[8] = packetParams.Params.Gfsk.DcFree;
 			break;
 		case PACKET_TYPE_LORA:
 			n = 6;
-			buf[0] = ( packetParams->Params.LoRa.PreambleLength >> 8 ) & 0xFF;
-			buf[1] = packetParams->Params.LoRa.PreambleLength;
-			buf[2] = packetParams->Params.LoRa.HeaderType;
-			buf[3] = packetParams->Params.LoRa.PayloadLength;
-			buf[4] = packetParams->Params.LoRa.CrcMode;
-			buf[5] = packetParams->Params.LoRa.InvertIQ;
+			buf[0] = ( packetParams.Params.LoRa.PreambleLength >> 8 ) & 0xFF;
+			buf[1] = packetParams.Params.LoRa.PreambleLength;
+			buf[2] = packetParams.Params.LoRa.HeaderType;
+			buf[3] = packetParams.Params.LoRa.PayloadLength;
+			buf[4] = packetParams.Params.LoRa.CrcMode;
+			buf[5] = packetParams.Params.LoRa.InvertIQ;
 			break;
 		default:
 		case PACKET_TYPE_NONE:
 			return;
 	}
 	WriteCommand( RADIO_SET_PACKETPARAMS, buf, n );
+
+	CurrentPacketParams = packetParams;
 }
 
 void SX126x::SetCadParams( RadioLoRaCadSymbols_t cadSymbolNum, uint8_t cadDetPeak, uint8_t cadDetMin, RadioCadExitModes_t cadExitMode, uint32_t cadTimeout )
@@ -1131,6 +1078,91 @@ void SX126x::WaitOnBusy() {
 
 void SX126x::WaitOnCounter() {
 	std::this_thread::sleep_for(std::chrono::microseconds(126));
+}
+
+uint32_t SX126x::GetTimeOnAir(const SX126x::ModulationParams_t &modparams, const SX126x::PacketParams_t &pktparams) {
+	double ToA = 0;
+
+	if (modparams.PacketType == PACKET_TYPE_LORA) {
+		// Bandwidth (in kHz)
+		uint32_t BW;
+		switch (modparams.Params.LoRa.Bandwidth) {
+			case LORA_BW_500:
+				BW = 500;
+				break;
+			case LORA_BW_250:
+				BW = 250;
+				break;
+			case LORA_BW_125:
+				BW = 125;
+				break;
+			case LORA_BW_062:
+				BW = 62;
+				break;
+			case LORA_BW_041:
+				BW = 41;
+				break;
+			case LORA_BW_031:
+				BW = 31;
+				break;
+			case LORA_BW_020:
+				BW = 20;
+				break;
+			case LORA_BW_015:
+				BW = 15;
+				break;
+			case LORA_BW_010:
+				BW = 10;
+				break;
+			case LORA_BW_007:
+				BW = 7;
+				break;
+			default:
+				BW = 500;
+				break;
+		}
+
+		// Spreading Factor (5 to 12)
+		uint8_t SF = modparams.Params.LoRa.SpreadingFactor;
+
+		// CR is 1, 2, 3 or 4 for respective coding rates 4/5, 4/6, 4/7 or 4/8
+		uint8_t CR = modparams.Params.LoRa.CodingRate;
+
+		uint8_t PayloadLength = pktparams.Params.LoRa.PayloadLength;
+		uint8_t CrcBits = pktparams.Params.LoRa.CrcMode == LORA_CRC_ON ? 16 : 0;
+		uint8_t HeaderSymbols = pktparams.Params.LoRa.HeaderType == LORA_PACKET_VARIABLE_LENGTH ? 20 : 0;
+
+		double Symbols = pktparams.Params.LoRa.PreambleLength;
+
+		if (SF == 5 || SF == 6) {
+			Symbols += 6.25 + 8 + ceil((fmax(8*PayloadLength+CrcBits-4*SF+HeaderSymbols, 0)/(4*SF))) * (CR + 4);
+		} else {
+			if (modparams.Params.LoRa.LowDatarateOptimize) {
+				Symbols += 4.25 + 8 + ceil((fmax(8*PayloadLength+CrcBits-4*SF+8+HeaderSymbols, 0)/(4*(SF-2)))) * (CR + 4);
+			} else {
+				Symbols += 4.25 + 8 + ceil((fmax(8*PayloadLength+CrcBits-4*SF+8+HeaderSymbols, 0)/(4*SF))) * (CR + 4);
+			}
+		}
+
+		ToA = (pow(2, SF) / BW) * Symbols;
+
+	} else if (modparams.PacketType == PACKET_TYPE_GFSK) {
+		uint16_t BitCount = 0;
+
+		BitCount = 4 + ( pktparams.Params.Gfsk.PreambleLength >> 4 ) * 4;              // preamble
+		BitCount = BitCount + 8 + ( pktparams.Params.Gfsk.SyncWordLength >> 1 ) * 8;   // sync word
+		BitCount = BitCount + ( ( pktparams.Params.Gfsk.HeaderType == RADIO_PACKET_VARIABLE_LENGTH ) ? 8 : 0 );
+		BitCount = BitCount + pktparams.Params.Gfsk.PayloadLength * 8;
+		BitCount = BitCount + ( pktparams.Params.Gfsk.CrcLength >> 4 ) * 8;
+
+		ToA = (((double)BitCount * modparams.Params.Gfsk.BitRate) / (32 * 32));
+	}
+
+	return (uint32_t)ceil(ToA);
+}
+
+uint32_t SX126x::GetTimeOnAir() {
+	return GetTimeOnAir(CurrentModParams, CurrentPacketParams);
 }
 
 
