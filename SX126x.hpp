@@ -178,7 +178,12 @@ public:
 		/*!
 		 * Set the current max value in the over current protection
 		 */
-		REG_OCP = 0x08E7
+		REG_OCP = 0x08E7,
+
+		/*!
+		 * IQ polarity setup, optimize the inverted IQ operation
+		 */
+		REG_IQ_POLARITY = 0x0736,
 
 	};
 public:
