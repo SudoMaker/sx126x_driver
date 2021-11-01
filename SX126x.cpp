@@ -572,15 +572,15 @@ void SX126x::SetModulationParams(const ModulationParams_t& modulationParams )
 			buf[2] = modulationParams.Params.LoRa.CodingRate;
 			buf[3] = modulationParams.Params.LoRa.LowDatarateOptimize;
 
-                        // WORKAROUND - Modulation Quality with 500 kHz LoRa Bandwidth, see DS_SX1261-2_V1.2 datasheet chapter 15.1
-                        if(modulationParams.PacketType == RadioPacketTypes_t::PACKET_TYPE_LORA && modulationParams.Params.LoRa.Bandwidth == RadioLoRaBandwidths_t::LORA_BW_500 )
-                        {
-                        	WriteReg(REG_TX_MODULATION, ReadReg(REG_TX_MODULATION) & ~(1 << 2));
-                        }
-                        else
-                        {
-                        	WriteReg( REG_TX_MODULATION, ReadReg( REG_TX_MODULATION ) | (1 << 2));
-                        }
+			// WORKAROUND - Modulation Quality with 500 kHz LoRa Bandwidth, see DS_SX1261-2_V1.2 datasheet chapter 15.1
+			if(modulationParams.PacketType == RadioPacketTypes_t::PACKET_TYPE_LORA && modulationParams.Params.LoRa.Bandwidth == RadioLoRaBandwidths_t::LORA_BW_500 )
+			{
+				WriteReg(REG_TX_MODULATION, ReadReg(REG_TX_MODULATION) & ~(1 << 2));
+			}
+			else
+			{
+				WriteReg( REG_TX_MODULATION, ReadReg( REG_TX_MODULATION ) | (1 << 2));
+			}
 			break;
 		default:
 		case PACKET_TYPE_NONE:

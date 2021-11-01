@@ -180,10 +180,10 @@ public:
 		 */
 		REG_OCP = 0x08E7,
 
-        	/*!
-        	 * TX modulation quality optimization
-        	*/
-        	REG_TX_MODULATION = 0x0889
+		/*!
+		 * TX modulation quality optimization
+		*/
+		REG_TX_MODULATION = 0x0889
 
 	};
 public:
