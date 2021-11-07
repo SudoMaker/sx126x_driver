@@ -646,6 +646,16 @@ void SX126x::SetPacketParams(const PacketParams_t& packetParams )
 			buf[3] = packetParams.Params.LoRa.PayloadLength;
 			buf[4] = packetParams.Params.LoRa.CrcMode;
 			buf[5] = packetParams.Params.LoRa.InvertIQ;
+
+			// WORKAROUND - Optimizing the Inverted IQ Operation, see DS_SX1261-2_V1.2 datasheet chapter 15.4
+			if(packetParams.Params.LoRa.InvertIQ == RadioLoRaIQModes_t::LORA_IQ_INVERTED)
+			{
+				WriteReg(REG_IQ_POLARITY, ReadReg(REG_IQ_POLARITY) & ~(1 << 2));
+			}
+			else
+			{
+				WriteReg(REG_IQ_POLARITY, ReadReg(REG_IQ_POLARITY) | ( 1 << 2 ));
+			}
 			break;
 		default:
 		case PACKET_TYPE_NONE:
