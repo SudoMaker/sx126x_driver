@@ -181,10 +181,14 @@ public:
 		REG_OCP = 0x08E7,
 
 		/*!
+		 * TX modulation quality optimization
+		*/
+		REG_TX_MODULATION = 0x0889,
+
+    /*
 		 * IQ polarity setup, optimize the inverted IQ operation
 		 */
 		REG_IQ_POLARITY = 0x0736,
-
 	};
 public:
 	/*!
